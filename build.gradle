@@ -1,5 +1,8 @@
 plugins {
     id 'java'
+    id 'jacoco'
+    id 'io.qameta.allure' version '2.12.0'
+    id 'com.diffplug.spotless' version '7.0.0'
 }
 
 group = 'org.usvm'
@@ -26,3 +29,36 @@ test {
     useJUnitPlatform()
 }
 
+test {
+    finalizedBy jacocoTestReport
+}
+
+jacoco {
+    toolVersion = "0.8.9"
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+    reports {
+        xml.required = false
+        csv.required = true
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+}
+
+spotless {
+    format 'misc', {
+        target '*.gradle', '.gitattributes', '.gitignore'
+        trimTrailingWhitespace()
+        leadingSpacesToTabs()
+        endWithNewline()
+    }
+    java {
+        target 'src/*/java/**/*.java'
+
+        googleJavaFormat().aosp().reflowLongStrings().skipJavadocFormatting()
+        importOrder()
+        removeUnusedImports()
+        formatAnnotations()
+    }
+}

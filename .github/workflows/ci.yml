@@ -2,11 +2,7 @@ name: CI Pipeline
 
 on:
   push:
-    branches:
-      - '**'
   pull_request:
-    branches:
-      - '**'
 
 jobs:
   test:
@@ -22,11 +18,39 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Run tests with Gradle
-        run: ./gradlew test
+      - name: Spotless check
+        run: ./gradlew spotlessCheck
+        continue-on-error: true
+
+      - name: Execute Gradle test and reports
+        run: ./gradlew test jacocoTestReport allureReport
 
       - name: Upload test reports
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: build/reports/tests/test
+
+      - name: Load allure history
+        uses: actions/checkout@v4
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Build allure report
+        uses: simple-elf/allure-report-action@v1.7
+        if: always()
+        with:
+          gh_pages: gh-pages
+          allure_history: allure-history
+          allure_results: build/allure-results
+
+      - name: Publish allure report
+        uses: peaceiris/actions-gh-pages@v3
+        if: always()
+        with:
+          github_token: ${{ secrets.TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
