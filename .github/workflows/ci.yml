@@ -9,8 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -22,7 +21,7 @@ jobs:
         run: ./gradlew spotlessCheck
         continue-on-error: true
 
-      - name: Execute Gradle test and reports
+      - name: test
         run: ./gradlew test jacocoTestReport allureReport
 
       - name: Upload test reports
@@ -51,6 +50,6 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         if: always()
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.TOKEN }}
           publish_branch: gh-pages
           publish_dir: allure-history
